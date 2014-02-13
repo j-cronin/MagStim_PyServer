@@ -1,7 +1,33 @@
 import web
-import Magstim
+from Magstim.MagstimInterface import Rapid2
 import sys
 import argparse
+from threading import Lock
+
+"""
+Where the TMS machine is connected to this computer
+"""
+SERIAL_PORT = 'COM1'
+
+"""
+"""
+POWER_THRESHOLD = 80;
+
+"""
+"""
+PERCENT_THRESHOLD = 110;
+
+"""
+Holds the interface to the Rapid2 TMS device
+"""
+STIMULATOR = None
+
+"""
+Prevents multi-threaded access to the stimulator
+Since the underlying implementation of web.py is unknown, 
+    we should control access to the stimulator in this interface
+"""
+STIMULATOR_LOCK = Lock()
 
 urls = (
     '/', 'index', 
@@ -21,27 +47,33 @@ class index:
 
 class tms_arm:
     """
-    
+    Arms the TMS device
     """
     
     def POST(self):
-        pass
+        STIMULATOR_LOCK.acquire()
+        STIMULATOR.armed = True
+        STIMULATOR_LOCK.release()
 
 class tms_disarm:
     """
-    
+    Disarms the TMS device
     """
     
     def POST(self):
-        pass
+        STIMULATOR_LOCK.acquire()
+        STIMULATOR.armed = False
+        STIMULATOR_LOCK.release()
 
 class tms_fire:
     """
-    
+    Triggers a TMS pulse
     """
     
     def POST(self):
-        pass
+        STIMULATOR_LOCK.acquire()
+        STIMULATOR.trigger()
+        STIMULATOR_LOCK.release()
 
 # Report all errors to the client
 web.internalerror = web.debugerror
@@ -56,6 +88,19 @@ if __name__ == '__main__':
     # Make sure that the server only listens to localhost
     # This is because we cannot allow outside computer to access the TMS
     sys.argv[1] = '127.0.0.1:%d' % args.port
+    
+    # Start the TMS device
+    STIMULATOR = Rapid2(port=SERIAL_PORT)
+    
+    # Set the power level
+    powerLevel = int(POWER_THRESHOLD * PERCENT_THRESHOLD / 100);
+    if powerLevel > 100:
+        powerLevel = 100
+    elif powerLevel < 0:
+        powerLevel = 0
+    STIMULATOR.intensity = powerLevel
+
+    success = Rapid2_SetPowerLevel(serialPortObj, powerLevel, 1);
     
     # Start the server
     app = web.application(urls, globals())
