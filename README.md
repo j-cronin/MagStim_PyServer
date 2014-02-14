@@ -26,6 +26,11 @@ For other arguments or options, run:
 python server.py --help
 ```
 
+To start a test server, without an attached TMS device, run:
+```
+python mockServer.py 25000
+```
+
 ## Differences from upstream repository
 
 * No Bistim support

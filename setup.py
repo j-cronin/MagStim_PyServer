@@ -8,6 +8,7 @@ setup(name='Magstim',
         'pyserial>=2.5', 
         'web.py>=0.37'
     ],
+    tests_require=['mock'],
     zip_safe=False,
     platforms=['any'],
 )

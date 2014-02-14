@@ -78,7 +78,7 @@ class tms_fire:
 # Report all errors to the client
 web.internalerror = web.debugerror
 
-if __name__ == '__main__':
+def do_main():
     # Take only a port as an argument
     parser = argparse.ArgumentParser(
             description='Opens a server to control the TMS machine on the given port')
@@ -99,10 +99,10 @@ if __name__ == '__main__':
     elif powerLevel < 0:
         powerLevel = 0
     STIMULATOR.intensity = powerLevel
-
-    success = Rapid2_SetPowerLevel(serialPortObj, powerLevel, 1);
     
     # Start the server
     app = web.application(urls, globals())
     app.run()
 
+if __name__ == '__main__':
+    do_main()
