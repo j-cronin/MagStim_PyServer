@@ -17,18 +17,6 @@ POWER_THRESHOLD = 80;
 """
 PERCENT_THRESHOLD = 110;
 
-"""
-Holds the interface to the Rapid2 TMS device
-"""
-STIMULATOR = Rapid2(port=SERIAL_PORT)
-
-"""
-Prevents multi-threaded access to the stimulator
-Since the underlying implementation of web.py is unknown, 
-    we should control access to the stimulator in this interface
-"""
-STIMULATOR_LOCK = Lock()
-
 urls = (
     '/', 'index', 
     '/TMS/arm', 'tms_arm', 
@@ -51,9 +39,9 @@ class tms_arm:
     """
     
     def POST(self):
-        STIMULATOR_LOCK.acquire()
-        STIMULATOR.armed = True
-        STIMULATOR_LOCK.release()
+        web.STIMULATOR_LOCK.acquire()
+        web.STIMULATOR.armed = True
+        web.STIMULATOR_LOCK.release()
 
 class tms_disarm:
     """
@@ -61,9 +49,9 @@ class tms_disarm:
     """
     
     def POST(self):
-        STIMULATOR_LOCK.acquire()
-        STIMULATOR.armed = False
-        STIMULATOR_LOCK.release()
+        web.STIMULATOR_LOCK.acquire()
+        web.STIMULATOR.armed = False
+        web.STIMULATOR_LOCK.release()
 
 class tms_fire:
     """
@@ -71,9 +59,9 @@ class tms_fire:
     """
     
     def POST(self):
-        STIMULATOR_LOCK.acquire()
-        STIMULATOR.trigger()
-        STIMULATOR_LOCK.release()
+        web.STIMULATOR_LOCK.acquire()
+        web.STIMULATOR.trigger()
+        web.STIMULATOR_LOCK.release()
 
 # Report all errors to the client
 web.internalerror = web.debugerror
@@ -88,6 +76,11 @@ def do_main():
     # Make sure that the server only listens to localhost
     # This is because we cannot allow outside computer to access the TMS
     sys.argv[1] = '127.0.0.1:%d' % args.port
+
+    # Initialize the shared state between web threads
+    web.STIMULATOR = Rapid2(port=SERIAL_PORT)
+    web.STIMULATOR_LOCK = Lock()
+    web.STIMULATOR.remocon = True
     
     # Set the power level
     powerLevel = int(POWER_THRESHOLD * PERCENT_THRESHOLD / 100);
@@ -95,7 +88,7 @@ def do_main():
         powerLevel = 100
     elif powerLevel < 0:
         powerLevel = 0
-    STIMULATOR.intensity = powerLevel
+    web.STIMULATOR.intensity = powerLevel
     
     # Start the server
     app = web.application(urls, globals())

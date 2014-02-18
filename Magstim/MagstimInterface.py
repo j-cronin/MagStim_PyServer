@@ -278,89 +278,9 @@ class Magstim(object):
     def _parse_response(self, response):
         pass #this will be overshadowed by Bistim or Rapid2 for the extended responses.
 
-
-################
-# Bistim Class #
-################
-class Bistim(Magstim):
-    def __init__(self, **kwargs):
-        #Bistim-specific instance variables.
-        self._stim_intensityb = 0 #Intensity of B
-        self._ISI = 			0 #Double-pulse interval in msec. Float
-        self._HR_mode = 		False	#TODO: Use the device response to update this.
-        self._master =			True #In Bistim mode and the device is being used to control the stim timing.
-        Magstim.__init__(self, **kwargs)#Call the super init (which also inits the thread)
-
-    def __del__(self):
-        self.ISI = 0.0
-        self.intensityb = 0
-        Magstim.__del__(self)
-
-    # STIMULUS INTENSITY  B #
-    def get_stimb(self):
-        return self._stim_intensityb
-    def set_stimb(self, value): #Convert the value to the nearest int between 0 and 100
-        value=int(round(value))
-        value=min(value,100)
-        value=max(value,1)#Stim intensity of 0 screws up the threading.
-        self.q.put({'stimb': value})#Tell the tread to set the stimulator intensity
-    intensityb = property(get_stimb, set_stimb)
-
-    # Double-pulse ISI #
-    def get_isi(self):
-        return self._ISI
-    def set_isi(self, value):
-        #Sanity check the ISI
-        value=max(value,0.0)#TODO: What is the minimum ISI?
-        value=min(value,999.0)#TODO: What is the maximum ISI?
-        if (value % 1.0) > 0.0 and value < 100:#If the ISI has a decimal value, be sure to set the stimulator to HR mode
-            if not self.hr_mode:
-                self.hr_mode=True #Note that setting the stimulator to hr_mode should only be done 100's of ms after remote_control
-                time.sleep(0.1)
-            self.q.put({'ISI': int(value*10)})
-        else:
-            if self.hr_mode:
-                self.hr_mode=False
-                time.sleep(0.1)
-            self.q.put({'ISI': int(value)})
-    ISI = property(get_isi, set_isi)
-
-    # ISI HR MODE #
-    def get_hr_mode(self):
-        return self._HR_mode
-    def set_hr_mode(self, value):
-        self.q.put({'bistim_res': value})
-    hr_mode = property(get_hr_mode, set_hr_mode)
-
-    # MASTER MODE #
-    def get_master_mode(self):
-        return self._master
-    def set_master_mode(self, value): pass #read-only
-    master_mode = property(get_master_mode, set_master_mode)
-
-    ########################################
-    # Bistim-specific serial port commands #
-    ########################################
-    def _parse_response(self, response):
-        #'J\t030030010\xf5'
-        #'X\t4j'
-        #Read the parts of the parameter response that are specific to Bistim
-        if response[0]=='J' or response[0]=='\\':
-            if len(response)>=7: self._stim_intensityb=int(response[5:8])
-            if len(response)>=10: self._ISI= (float(response[8:11]))/10 if self.hr_mode else float(response[8:11])
-        elif response[0]=='X':
-            mode=response[2]
-            mode_hex=binascii.hexlify(mode)
-            self._master = bool(mode_hex[0]=='3') #If the code starts with a 3, it is master. If it is 5, it is slave
-            self._HR_mode = bool(mode_hex[1]=='4') #0 is single, 1=simul, 2=lowres, 3=extern, 4=hires
-
 ################
 # Rapid2 Class #
 ################
-#I don't have a Rapid2 to test against so this class might not work.
-#!!!!! I DO NOT CALCULATE THE TOTAL ENERGY DISSIPATION
-#!!!!! SEE THE PDF TO MAKE SURE YOUR STIMULUS PARAMETERS
-#!!!!! WILL YIELD EXPECTED RESULTS
 class Rapid2(Magstim):
     def __init__(self, **kwargs):
         #Rapid2-specific instance variables.
