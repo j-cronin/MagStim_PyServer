@@ -27,12 +27,8 @@ class MagThread(threading.Thread):
             try:#Get a message from the queue
                 msg = self.queue.get(True, 0.5)
             except:#Queue is empty -> Do the default action.
-                if isinstance(self.stimulator,Bistim) and self.alternate_default:
-                    self.alternate_default = False
-                    self.queue.put({'bistim_mode': 0})
-                else:
-                    self.alternate_default = True
-                    self.queue.put({'default': 0})
+                self.alternate_default = True
+                self.queue.put({'default': 0})
             else:#We got a message
                 time_to_sleep = None
                 key = msg.keys()[0]
@@ -49,18 +45,6 @@ class MagThread(threading.Thread):
                 elif key=='default':
                     cmd_string='J@u'
                     if isinstance(self.stimulator,Rapid2): cmd_string='\@c'
-
-                #Bistim specific messages
-                elif key=='stimb':
-                    cmd_string='A'+str(value).zfill(3)
-                    cmd_string=cmd_string+_crc(cmd_string)
-                elif key=='ISI':
-                    cmd_string='C'+str(value).zfill(3)
-                    cmd_string=cmd_string+_crc(cmd_string)
-                elif key=='bistim_res':
-                    cmd_string='Y@f' if value else 'Z@e'
-                    time_to_sleep = 0.1
-                elif key=='bistim_mode': cmd_string='X@g'
 
                 #Rapid2 specific messages
                 elif key=='train_dur':
