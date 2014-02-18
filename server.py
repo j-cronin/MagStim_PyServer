@@ -2,7 +2,8 @@ import web
 from Magstim.MagstimInterface import Rapid2
 import sys
 import argparse
-from threading import Lock
+import time
+from threading import Lock, Thread
 
 """
 Where the TMS machine is connected to this computer
@@ -62,6 +63,15 @@ class tms_fire:
         web.STIMULATOR_LOCK.acquire()
         web.STIMULATOR.trigger()
         web.STIMULATOR_LOCK.release()
+        
+class maintain_communication(Thread):
+    def run(self):
+        while True:
+            web.STIMULATOR_LOCK.acquire()
+            web.STIMULATOR.remocon = True
+            web.STIMULATOR_LOCK.release()
+            
+            time.sleep(0.25)
 
 # Report all errors to the client
 web.internalerror = web.debugerror
