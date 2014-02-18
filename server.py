@@ -20,7 +20,7 @@ PERCENT_THRESHOLD = 110;
 """
 Holds the interface to the Rapid2 TMS device
 """
-STIMULATOR = None
+STIMULATOR = Rapid2(port=SERIAL_PORT)
 
 """
 Prevents multi-threaded access to the stimulator
@@ -88,9 +88,6 @@ def do_main():
     # Make sure that the server only listens to localhost
     # This is because we cannot allow outside computer to access the TMS
     sys.argv[1] = '127.0.0.1:%d' % args.port
-    
-    # Start the TMS device
-    STIMULATOR = Rapid2(port=SERIAL_PORT)
     
     # Set the power level
     powerLevel = int(POWER_THRESHOLD * PERCENT_THRESHOLD / 100);

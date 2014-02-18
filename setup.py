@@ -6,7 +6,9 @@ setup(name='Magstim',
     packages=['Magstim'],
     install_requires=[
         'pyserial>=2.5', 
-        'web.py>=0.37'
+        'web.py>=0.37', 
+        'requests>=1.2.3', 
+        'mock>=1.0.0'
     ],
     tests_require=['mock'],
     zip_safe=False,
