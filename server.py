@@ -92,6 +92,11 @@ def do_main():
     web.STIMULATOR_LOCK = Lock()
     web.STIMULATOR.remocon = True
     
+    # Start the thread to keep the TMS awake
+    poller = maintain_communication()
+    poller.daemon = True
+    poller.start()
+    
     # Set the power level
     powerLevel = int(POWER_THRESHOLD * PERCENT_THRESHOLD / 100);
     if powerLevel > 100:

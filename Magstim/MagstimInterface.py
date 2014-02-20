@@ -142,7 +142,7 @@ class Magstim(object):
 
         #Start the thread to handle the queue.
         self.thread = MagThread(self.q, self) #Pass message handler and context.
-        self.thread.setDaemon(True) #Dunno, always there in the thread examples.
+        self.thread.daemon = True # Allows program to exit without joining this thread
         self.thread.start() #Kicks off the run(). The thread will check parameters every 0.5 seconds unless another message is passed.
 
         time.sleep(0.1)
