@@ -42,6 +42,13 @@ class tms_arm:
     def POST(self):
         web.STIMULATOR_LOCK.acquire()
         web.STIMULATOR.armed = True
+        
+        # Wait a bit and check to see if it worked
+        time.sleep(0.5)
+        if not web.STIMULATOR.armed:
+            web.STIMULATOR_LOCK.release()
+            raise web.InternalError('Could not arm stimulator')
+        
         web.STIMULATOR_LOCK.release()
 
 class tms_disarm:
@@ -61,6 +68,10 @@ class tms_fire:
     
     def POST(self):
         web.STIMULATOR_LOCK.acquire()
+        if not web.STIMULATOR.ready:
+            web.STIMULATOR_LOCK.release()
+            raise web.InternalError('Stimulator not armed')
+        
         web.STIMULATOR.trigger()
         web.STIMULATOR_LOCK.release()
         

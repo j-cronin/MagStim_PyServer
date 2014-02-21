@@ -7,4 +7,6 @@ if __name__ == '__main__':
     parser.add_argument('port', type=int)
     args = parser.parse_args()
     
-    requests.post('http://localhost:%d/TMS/disarm' % args.port)
+    res = requests.post('http://localhost:%d/TMS/disarm' % args.port)
+    print res.status_code, res.text
+    res.close()
