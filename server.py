@@ -1,4 +1,5 @@
 import web
+import Magstim.Rapid2Constants
 from Magstim.MagstimInterface import Rapid2
 import sys
 import argparse
@@ -44,7 +45,9 @@ class tms_arm:
         web.STIMULATOR.armed = True
         
         # Wait a bit and check to see if it worked
-        time.sleep(0.5)
+        waitTime = (Magstim.Rapid2Constants.output_intesity[web.STIMULATOR.intensity] - 1050) / 1050.0
+        waitTime = max(0.5, waitTime)
+        time.sleep(waitTime)
         if not web.STIMULATOR.armed:
             web.STIMULATOR_LOCK.release()
             raise web.InternalError('Could not arm stimulator')
