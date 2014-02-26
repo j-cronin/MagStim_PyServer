@@ -167,6 +167,9 @@ class Magstim(object):
     ################################
     # PROPERTY GETTERS AND SETTERS #
     ################################
+    
+    def disable_safety(self):
+        self.q.put({'ignore_safety': 1})
 
     # STIMULATOR READY #
     #It isn't necessary to post a message to ask for certain information because the thread
