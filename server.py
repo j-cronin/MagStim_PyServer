@@ -52,8 +52,10 @@ class tms_arm:
         
         # Just in case
         web.STIMULATOR.disable_safety()
-
         web.STIMULATOR_LOCK.release()
+        
+        # Return nothing
+        web.ctx.status = '204 No Content'
 
 class tms_disarm:
     """
@@ -64,6 +66,9 @@ class tms_disarm:
         web.STIMULATOR_LOCK.acquire()
         web.STIMULATOR.armed = False
         web.STIMULATOR_LOCK.release()
+        
+        # Return nothing
+        web.ctx.status = '204 No Content'
 
 class tms_fire:
     """
@@ -74,6 +79,9 @@ class tms_fire:
         web.STIMULATOR_LOCK.acquire()
         web.STIMULATOR.trigger()
         web.STIMULATOR_LOCK.release()
+        
+        # Return nothing
+        web.ctx.status = '204 No Content'
 
 class tms_intensity:
     """
@@ -84,6 +92,9 @@ class tms_intensity:
         web.STIMULATOR_LOCK.acquire()
         web.STIMULATOR.intensity = int(powerLevel)
         web.STIMULATOR_LOCK.release()
+        
+        # Return nothing
+        web.ctx.status = '204 No Content'
 
 class maintain_communication(Thread):
     def run(self):
