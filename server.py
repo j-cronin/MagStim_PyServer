@@ -82,6 +82,10 @@ class tms_fire:
         
         # Return nothing
         web.ctx.status = '204 No Content'
+        
+        # Allow Cross-Origin Resource Sharing (CORS)
+        # This lets a web browser call this method with no problems
+        web.header('Access-Control-Allow-Origin', web.ctx.env.get('HTTP_ORIGIN'))
 
 class tms_intensity:
     """
