@@ -11,20 +11,16 @@ Where the TMS machine is connected to this computer
 """
 SERIAL_PORT = 'COM1'
 
-"""
-"""
-POWER_THRESHOLD = 80;
-
-"""
-"""
-PERCENT_THRESHOLD = 110;
+POWER_THRESHOLD_LOW = 50;
+POWER_THRESHOLD_HIGH = 90;
 
 urls = (
     '/', 'index',
     '/TMS/arm', 'tms_arm',
     '/TMS/disarm', 'tms_disarm',
-    '/TMS/fire', 'tms_fire',
-    '/TMS/power/(\d*)', 'tms_intensity'
+    '/TMS/fire/(high|low)', 'tms_fire',
+    '/TMS/power/(high|low)/(\d+)', 'tms_intensity',
+    '/(\w+\.\w+)', 'get_static_content'
 )
 
 class index:
@@ -33,7 +29,12 @@ class index:
     """
 
     def GET(self):
-        with open('README.md', 'r') as f:
+        with open('index.html', 'r') as f:
+            return f.read()
+            
+class get_static_content:
+    def GET(self, path):
+        with open('static/%s' % path, 'r') as f:
             return f.read()
 
 class tms_arm:
@@ -75,8 +76,16 @@ class tms_fire:
     Triggers a TMS pulse
     """
 
-    def POST(self):
+    def POST(self, mode):
         web.STIMULATOR_LOCK.acquire()
+        if mode == 'high':
+            web.STIMULATOR.intensity = int(POWER_THRESHOLD_HIGH)
+        elif mode == 'low':
+            web.STIMULATOR.intensity = int(POWER_THRESHOLD_LOW)
+        else:
+            print "Routing error - Fire"
+            exit()
+            
         web.STIMULATOR.trigger()
         web.STIMULATOR_LOCK.release()
         
@@ -92,9 +101,20 @@ class tms_intensity:
     Sets the intensity level of the TMS
     """
     
-    def POST(self, powerLevel):
+    def POST(self, mode, powerLevel):
+        powerLevel = int(powerLevel)
+        if powerLevel > 100 or powerLevel < 1:
+            web.ctx.status = '400 Bad Request'
+            return
+        
         web.STIMULATOR_LOCK.acquire()
-        web.STIMULATOR.intensity = int(powerLevel)
+        if mode == 'high':
+            POWER_THRESHOLD_HIGH = powerLevel
+        elif mode == 'low':
+            POWER_THRESHOLD_LOW = powerLevel
+        else:
+            print "Routing error - Intensity"
+            exit()
         web.STIMULATOR_LOCK.release()
         
         # Return nothing
@@ -133,13 +153,8 @@ def do_main():
     poller.daemon = True
     poller.start()
 
-    # Set the power level
-    powerLevel = int(POWER_THRESHOLD * PERCENT_THRESHOLD / 100);
-    if powerLevel > 100:
-        powerLevel = 100
-    elif powerLevel < 0:
-        powerLevel = 0
-    web.STIMULATOR.intensity = powerLevel
+    # Set the power level (defaults to low)
+    web.STIMULATOR.intensity = POWER_THRESHOLD_LOW
     web.STIMULATOR.disable_safety()
 
     # Start the server

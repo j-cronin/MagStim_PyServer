@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Choose a Client Type</title>
+        <link rel="stylesheet" type="text/css" href="Style.css" />
+        <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+		<script type="text/javascript">
+            function PostTo(URL) {
+                $.ajax({
+                    type: 'POST',
+                    url: URL,
+                    async: false,
+                    error: function(jqXHR) {
+                        alert("POST " + URL + " -> " + JSON.stringify(jqXHR));
+                    }
+                });
+            }
+        
+            window.onload = function () {
+                $('#ArmButton').button()
+                    .click(function () { PostTo('/TMS/arm'); });
+                $('#DisarmButton').button()
+                    .click(function () { PostTo('/TMS/disarm'); });
+                $('#SetLowButton').button()
+                    .click(function () { 
+                        PostTo('/TMS/power/low/' + $('#LowPowerInput').val()); 
+                    });
+                $('#SetHighButton').button()
+                    .click(function () { 
+                        PostTo('/TMS/power/high/' + $('#HighPowerInput').val()); 
+                    });
+                $('#FireLowButton').button()
+                    .click(function () { PostTo('/TMS/fire/low'); });
+                $('#FireHighButton').button()
+                    .click(function () { PostTo('/TMS/fire/high'); });
+            }
+		</script>
+	</head>
+	<body tabindex="0">
+        <center>
+            <h1>TMS Management Console: </h1>
+            <div id="ArmButton">Arm</div>
+            <div id="DisarmButton">Disarm</div></br></br>
+            <input id="LowPowerInput" type="text"></input>
+            <div id="SetLowButton">Set Low Intensity Power Level</div></br>
+            <input id="HighPowerInput" type="text"></input>
+            <div id="SetHighButton">Set High Intensity Power Level</div></br></br>
+            <div id="FireLowButton">Fire Low Intensity</div>
+            <div id="FireHighButton">Fire High Intensity</div>
+        </center>
+	</body>
+</html>
