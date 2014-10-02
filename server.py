@@ -87,8 +87,11 @@ class tms_fire:
             print "Routing error - Fire"
             exit()
           
-        ## Do we need some sort of delay here? (for charging?)
-        # time.sleep(0.5)
+        # Need a delay for charging up
+        time.sleep(2)
+        
+        # Just in case
+        web.STIMULATOR.disable_safety()
             
         web.STIMULATOR.trigger()
         web.STIMULATOR_LOCK.release()
