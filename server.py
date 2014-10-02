@@ -11,6 +11,7 @@ Where the TMS machine is connected to this computer
 """
 SERIAL_PORT = 'COM1'
 
+# Note: You must restart the server for changes to these defaults to take effect
 POWER_THRESHOLD_LOW = 50;
 POWER_THRESHOLD_HIGH = 90;
 
@@ -79,12 +80,15 @@ class tms_fire:
     def POST(self, mode):
         web.STIMULATOR_LOCK.acquire()
         if mode == 'high':
-            web.STIMULATOR.intensity = int(POWER_THRESHOLD_HIGH)
+            web.STIMULATOR.intensity = int(web.POWER_THRESHOLD_HIGH)
         elif mode == 'low':
-            web.STIMULATOR.intensity = int(POWER_THRESHOLD_LOW)
+            web.STIMULATOR.intensity = int(web.POWER_THRESHOLD_LOW)
         else:
             print "Routing error - Fire"
             exit()
+          
+        ## Do we need some sort of delay here? (for charging?)
+        # time.sleep(0.5)
             
         web.STIMULATOR.trigger()
         web.STIMULATOR_LOCK.release()
@@ -109,9 +113,9 @@ class tms_intensity:
         
         web.STIMULATOR_LOCK.acquire()
         if mode == 'high':
-            POWER_THRESHOLD_HIGH = powerLevel
+            web.POWER_THRESHOLD_HIGH = powerLevel
         elif mode == 'low':
-            POWER_THRESHOLD_LOW = powerLevel
+            web.POWER_THRESHOLD_LOW = powerLevel
         else:
             print "Routing error - Intensity"
             exit()
@@ -153,7 +157,9 @@ def do_main():
     poller.daemon = True
     poller.start()
 
-    # Set the power level (defaults to low)
+    # Set the power levels (defaults to low)
+    web.POWER_THRESHOLD_LOW = POWER_THRESHOLD_LOW
+    web.POWER_THRESHOLD_HIGH = POWER_THRESHOLD_HIGH
     web.STIMULATOR.intensity = POWER_THRESHOLD_LOW
     web.STIMULATOR.disable_safety()
 
