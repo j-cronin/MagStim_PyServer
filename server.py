@@ -94,6 +94,7 @@ class tms_fire:
             exit()
           
         # Need a delay for charging up
+        web.STIMULATOR.armed = True
         time.sleep(2)
         
         # Just in case

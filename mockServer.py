@@ -8,7 +8,9 @@ with patch('serial.Serial') as mockedSerialPort:
     
     # Print out whatever is being written to the serial port
     def show_me(data):
-        print data
+        pass 
+        # This output might not be necessary unless debugging
+        # print data
     serialObj.write.side_effect = show_me
     
     server.do_main()
