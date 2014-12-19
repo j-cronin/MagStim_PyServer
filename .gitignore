@@ -2,3 +2,7 @@
 .pydevproject
 .settings
 build
+*.pyc
+*.txt
+*.egg
+Magstim.egg-info

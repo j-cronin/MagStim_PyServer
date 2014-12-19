@@ -306,5 +306,5 @@ class Rapid2(Magstim):
         if response[0]=='J' or response[0]=='\\':
             if len(response)>=8: self._train_freq=(float(response[5:9]))/10
             if len(response)>=13: self._train_pulses=int(response[9:14])
-            if len(response)>=17: self._train_duration=(float(reponse[14:18]))/10
-            if len(response)>=21: self._train_wait_time=(float(response[18:22]))/10
+            if len(response)>=17: self._train_duration=(float(response[14:18]))/10
+            if len(response)>=21: self._train_wait_time=(float(response[18:21]))/10

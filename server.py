@@ -4,6 +4,7 @@ from Magstim.MagstimInterface import Rapid2
 import sys
 import argparse
 import time
+import random
 from threading import Lock, Thread
 
 """
@@ -76,18 +77,24 @@ class tms_fire:
     """
     Triggers a TMS pulse
     """
-
+    # possible values are 0, 2, and 4(% intensity) added or subtracted from the high or low intensities, respectively
+    
     def POST(self, mode):
+        rand = random.randrange(0, 3) * 2
+        fired = 0;
         web.STIMULATOR_LOCK.acquire()
         if mode == 'high':
-            web.STIMULATOR.intensity = int(web.POWER_THRESHOLD_HIGH)
+            fired = int(web.POWER_THRESHOLD_HIGH) + rand
+            web.STIMULATOR.intensity = fired
         elif mode == 'low':
-            web.STIMULATOR.intensity = int(web.POWER_THRESHOLD_LOW)
+            fired = int(web.POWER_THRESHOLD_LOW) - rand                     
+            web.STIMULATOR.intensity = fired
         else:
             print "Routing error - Fire"
             exit()
           
         # Need a delay for charging up
+        web.STIMULATOR.armed = True
         time.sleep(2)
         
         # Just in case
@@ -96,12 +103,10 @@ class tms_fire:
         web.STIMULATOR.trigger()
         web.STIMULATOR_LOCK.release()
         
-        # Return nothing
-        web.ctx.status = '204 No Content'
-        
         # Allow Cross-Origin Resource Sharing (CORS)
         # This lets a web browser call this method with no problems
         web.header('Access-Control-Allow-Origin', web.ctx.env.get('HTTP_ORIGIN'))
+        return str(fired)
 
 class tms_intensity:
     """
@@ -110,7 +115,8 @@ class tms_intensity:
     
     def POST(self, mode, powerLevel):
         powerLevel = int(powerLevel)
-        if powerLevel > 100 or powerLevel < 1:
+        #Power level must be between 1 and 100 after random ranging applied (4% added or subtracted)
+        if powerLevel > 96 or powerLevel < 5:
             web.ctx.status = '400 Bad Request'
             return
         
